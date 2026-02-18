@@ -4,7 +4,6 @@ APIテストスクリプト - ローカルでAPIをたくさん叩いてテス�
 """
 import requests
 import json
-from pathlib import Path
 
 BASE_URL = "http://localhost:8000"
 
@@ -62,39 +61,6 @@ def test_convert_batch():
     }
     print_response("バッチ変換", requests.post(f"{BASE_URL}/api/kanafy-ko/batch", json=batch_data, headers=HEADERS))
 
-def test_lrc_content():
-    """LRCコンテンツ変換"""
-    lrc_content = """[ti:テスト曲]
-[ar:テストアーティスト]
-[al:テストアルバム]
-
-[00:00.00]오늘의 Color
-[00:03.45]전화가 울렸어요
-[00:07.12]한국어 노래
-[00:10.30]Let's go! 라는 노래야
-[00:13.45]배터리 battery"""
-    
-    data = {
-        "content": lrc_content,
-        "use_g2pk": True
-    }
-    print_response("LRCコンテンツ変換", requests.post(f"{BASE_URL}/api/kanafy-ko/lrc", json=data, headers=HEADERS))
-
-def test_lrc_upload():
-    """LRCファイルアップロード"""
-    # サンプルLRCファイルを探す
-    lrc_files = list(Path("backend").glob("*.lrc"))
-    if lrc_files:
-        lrc_file = lrc_files[0]
-        print(f"\n📁 Uploading: {lrc_file}")
-        with open(lrc_file, "rb") as f:
-            files = {"file": (lrc_file.name, f, "text/plain")}
-            data = {"use_g2pk": True}
-            print_response(f"LRCファイルアップロード: {lrc_file.name}", 
-                          requests.post(f"{BASE_URL}/api/kanafy-ko/lrc/upload", files=files, data=data, headers=HEADERS))
-    else:
-        print("\n⚠️  LRCファイルが見つかりませんでした")
-
 def test_dictionary_add():
     """辞書追加"""
     test_entries = [
@@ -109,7 +75,6 @@ def test_dictionary_add():
 def test_test_endpoints():
     """テスト用エンドポイント"""
     print_response("テスト変換", requests.get(f"{BASE_URL}/api/kanafy-ko/test", headers=HEADERS))
-    print_response("テストLRC変換", requests.get(f"{BASE_URL}/api/kanafy-ko/test/lrc", headers=HEADERS))
 
 def test_automated_lrc_health():
     """自動LRC生成APIのヘルスチェック"""
@@ -134,8 +99,6 @@ def main():
         # 変換API
         test_convert_single()
         test_convert_batch()
-        test_lrc_content()
-        test_lrc_upload()
         test_dictionary_add()
         test_test_endpoints()
         

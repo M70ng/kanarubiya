@@ -22,7 +22,7 @@ def _load_user_exceptions() -> dict:
     try:
         with open(USER_EXC_PATH, encoding='utf-8') as f:
             _USER_KANA_EXC = json.load(f)
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         _USER_KANA_EXC = {}
     _MERGED_EXC_CACHE = None
     return _USER_KANA_EXC

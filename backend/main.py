@@ -98,7 +98,7 @@ DISABLE_DOCS = os.environ.get("DISABLE_DOCS", "").lower() in ("1", "true", "yes"
 # FastAPIアプリケーションの作成（メインは歌詞→かな読み変換API）
 app = FastAPI(
     title="歌詞→かな読み変換 API",
-    description="歌詞・韓国語テキストを日本語かな読みに変換するAPI。メイン: POST /api/kanafy-ko。LRC貼り付け・バッチ変換対応。",
+    description="歌詞・韓国語テキストを日本語かな読みに変換するAPI。メイン: POST /api/kanafy-ko。バッチ変換対応。",
     version="2.0.0",
     docs_url=None if DISABLE_DOCS else "/docs",
     redoc_url=None if DISABLE_DOCS else "/redoc",
@@ -136,8 +136,6 @@ async def root():
             "description": "歌詞・韓国語→かな読み変換（メイン）",
             "convert": "POST /api/kanafy-ko",
             "batch_convert": "POST /api/kanafy-ko/batch",
-            "lrc_paste": "POST /api/kanafy-ko/lrc",
-            "lrc_upload": "POST /api/kanafy-ko/lrc/upload",
             "dictionary_add": "POST /api/kanafy-ko/dictionary",
             "health": "GET /api/kanafy-ko/health",
             "test": "GET /api/kanafy-ko/test",

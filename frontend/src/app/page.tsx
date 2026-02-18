@@ -15,7 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Copy, Loader2, BookPlus, Music2, FileText, Users, ArrowRightLeft, ArrowUp, ClipboardPaste } from "lucide-react"
-import { convertText, addDictionaryEntry } from "@/utils/lrcProcessor"
+import { convertText, addDictionaryEntry } from "@/utils/kanaApi"
 
 export default function ConvertPage() {
   const [input, setInput] = useState("")

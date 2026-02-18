@@ -33,40 +33,22 @@ class G2pkWrapper:
     
     def convert(self, text: str, descriptive: bool = True) -> str:
         """
-        韓国語テキストをg2pkで処理して発音に近いハングルに変換
-        ハングル部分のみを変換し、英語・記号・数字はそのまま残す
-        
+        韓国語テキストをg2pkで処理して発音に近いハングルに変換。
+        全文を1回g2pに渡し、文脈を考慮した発音・MeCab呼び出し回数の削減を行う。
+
         Args:
-            text: 韓国語テキスト
+            text: 韓国語テキスト（英語・記号・数字・カナ混じり可。例外辞書適用後の想定）
             descriptive: 実際の発音モード（True推奨）
-        
+
         Returns:
-            発音に近いハングル文字列（英語・記号はそのまま）
+            発音に近いハングル文字列（非ハングルはそのまま維持）
         """
         try:
-            # テキストをトークンに分割
-            tokens = self.split_mixed_text(text)
-            result_tokens = []
-            
-            for token in tokens:
-                if self.is_hangul(token):
-                    # ハングルの場合のみg2pkで処理
-                    pron = self.g2p(token, descriptive=descriptive)
-                    result_tokens.append(pron)
-                else:
-                    # 英語・記号・空白はそのまま
-                    result_tokens.append(token)
-            
-            # 結果を結合
-            result = ''.join(result_tokens)
-            
-            # 結果をクリーンアップ（余分な空白を整理）
-            cleaned = self._clean_result(result)
-            
-            return cleaned
+            # 全文を1回だけg2pに渡す（g2pk設計に沿った使い方）
+            result = self.g2p(text, descriptive=descriptive)
+            return self._clean_result(result)
         except Exception as e:
             print(f"g2pk処理エラー: {e}")
-            # エラーの場合は元のテキストを返す
             return text
     
     def _clean_result(self, result: str) -> str:
