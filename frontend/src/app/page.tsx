@@ -113,8 +113,8 @@ export default function ConvertPage() {
         </defs>
       </svg>
       <header className="shrink-0 px-6 py-8 flex flex-col items-center justify-center text-center">
-        <img src="/icon.svg" alt="" className="h-[4.5rem] w-[4.5rem] rounded-xl mb-5 animate-float" />
-        <h1 className="text-5xl font-medium text-slate-800 tracking-tight font-rounded animate-fade-in-up animate-delay-100 opacity-0">
+        <img src="/icon.svg" alt="" className="h-[4.5rem] w-[4.5rem] rounded-xl mb-5" />
+        <h1 className="text-3xl sm:text-5xl font-medium text-slate-800 tracking-tight font-rounded animate-fade-in-up animate-delay-100 opacity-0">
           カナルビ屋
         </h1>
         <p className="text-lg text-slate-600/90 mt-2 animate-fade-in-up animate-delay-200 opacity-0">
@@ -137,7 +137,8 @@ export default function ConvertPage() {
               <p className="text-base text-slate-800 leading-relaxed whitespace-pre-wrap">그래요 난 널 사랑해 언제나 믿어</p>
             </div>
             <div className="flex items-center justify-center py-2 sm:py-0 sm:px-2 bg-slate-100/60 shrink-0">
-              <span className="text-2xl text-slate-500 animate-pulse" aria-hidden>→</span>
+              <span className="text-2xl text-slate-500 animate-pulse hidden sm:inline" aria-hidden>→</span>
+              <span className="text-2xl text-slate-500 animate-pulse sm:hidden" aria-hidden>↓</span>
             </div>
             <div className="flex-1 px-4 py-3 bg-slate-50/30 sm:bg-transparent sm:border-l border-slate-200/70">
               <p className="text-xs text-slate-500 mb-1.5 font-bold">かな変換後</p>
@@ -168,7 +169,7 @@ export default function ConvertPage() {
               placeholder="歌詞・韓国語を貼り付け…"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              className="min-h-[200px] resize-none border-0 focus-visible:ring-0 rounded-b-xl px-4 pt-4 pb-14 pr-4 text-slate-800 placeholder:text-slate-400 leading-relaxed input-result-text font-rounded"
+              className="min-h-[200px] resize-none border-0 focus-visible:ring-0 rounded-b-xl px-4 pt-4 pb-14 sm:pb-14 pr-4 text-slate-800 placeholder:text-slate-400 leading-relaxed input-result-text font-rounded"
               disabled={isConverting}
             />
             <div className="absolute bottom-3 right-5">
@@ -176,14 +177,14 @@ export default function ConvertPage() {
                 size="sm"
                 onClick={handleConvert}
                 disabled={isConverting || !input.trim()}
-                className="rounded-full h-11 px-6 bg-slate-600 text-white text-base font-medium flex items-center gap-1.5 font-rounded"
+                className="rounded-full h-9 sm:h-11 px-4 sm:px-6 bg-purple-700 hover:bg-purple-800 text-white text-sm sm:text-base font-medium flex items-center gap-1.5 font-rounded shadow-sm hover:shadow-md transition-all"
               >
                 {isConverting ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
                 ) : (
                   <>
                     変換する
-                    <ArrowUp className="h-4 w-4" />
+                    <ArrowUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </>
                 )}
               </Button>
