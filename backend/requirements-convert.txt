@@ -1,0 +1,6 @@
+# 歌詞→かな読み変換API（g2pk 必須。MeCab のシステムインストールが必要）
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+g2pk>=0.9.4
+python-multipart>=0.0.6
