@@ -1,6 +1,7 @@
 # core/hangul2kana.py
 import json
 import os
+from typing import Optional
 
 # 例外辞書のロード
 EXC_PATH = os.path.join(os.path.dirname(__file__), '../resources/kana_exceptions.json')
@@ -13,15 +14,17 @@ except FileNotFoundError:
 # ユーザーが追加した例外辞書（変換漏れ報告で追加される）
 USER_EXC_PATH = os.path.join(os.path.dirname(__file__), '../resources/user_kana_exceptions.json')
 _USER_KANA_EXC: dict = {}
+_MERGED_EXC_CACHE: Optional[dict] = None
 
 
 def _load_user_exceptions() -> dict:
-    global _USER_KANA_EXC
+    global _USER_KANA_EXC, _MERGED_EXC_CACHE
     try:
         with open(USER_EXC_PATH, encoding='utf-8') as f:
             _USER_KANA_EXC = json.load(f)
     except FileNotFoundError:
         _USER_KANA_EXC = {}
+    _MERGED_EXC_CACHE = None
     return _USER_KANA_EXC
 
 
@@ -37,12 +40,15 @@ except FileNotFoundError:
 
 def get_merged_exceptions() -> dict:
     """組み込み例外とユーザー追加例外をマージ（ユーザーを優先）"""
-    return {**KANA_EXC_DICT, **_USER_KANA_EXC}
+    global _MERGED_EXC_CACHE
+    if _MERGED_EXC_CACHE is None:
+        _MERGED_EXC_CACHE = {**KANA_EXC_DICT, **_USER_KANA_EXC}
+    return _MERGED_EXC_CACHE
 
 
 def add_user_exception(hangul: str, kana: str) -> None:
     """ユーザー辞書に1件追加し、ファイルに保存。メモリ上の辞書も更新。"""
-    global _USER_KANA_EXC
+    global _USER_KANA_EXC, _MERGED_EXC_CACHE
     hangul = hangul.strip()
     kana = kana.strip()
     if not hangul or not kana:
@@ -51,6 +57,7 @@ def add_user_exception(hangul: str, kana: str) -> None:
     _USER_KANA_EXC[hangul] = kana
     with open(USER_EXC_PATH, 'w', encoding='utf-8') as f:
         json.dump(_USER_KANA_EXC, f, ensure_ascii=False, indent=2)
+    _MERGED_EXC_CACHE = None
 
 
 def hangul_to_kana(text: str) -> str:

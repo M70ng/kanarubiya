@@ -22,8 +22,7 @@ python main.py
 
 g2pk は MeCab に依存するため、上記の MeCab インストールを先に行ってください。
 
-- **変換APIのみ**: `python main.py`（デフォルト）
-- **自動LRC生成も使う**: `python main.py --with-lrc-generator`
+- **変換API**: `python main.py`
 
 ## フロントエンド
 

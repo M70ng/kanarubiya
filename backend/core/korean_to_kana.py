@@ -122,13 +122,19 @@ class KoreanToKanaConverter:
             # エラーの場合は元のテキストを返す
             return korean_text
     
-    def convert_with_details(self, korean_text: str, use_g2pk: bool = True) -> dict:
+    def convert_with_details(
+        self,
+        korean_text: str,
+        use_g2pk: bool = True,
+        include_overall_phonetic: bool = False,
+    ) -> dict:
         """
         変換の詳細情報を含めて変換
         
         Args:
             korean_text: 韓国語テキスト
             use_g2pk: g2pkを使用するかどうか
+            include_overall_phonetic: True の場合のみ、全文g2pk結果を計算して返す
         
         Returns:
             変換詳細を含む辞書
@@ -189,8 +195,8 @@ class KoreanToKanaConverter:
             result['tokens'] = token_details
             result['kana'] = final_result
             
-            if use_g2pk:
-                # 全体的なg2pk変換結果も記録
+            if use_g2pk and include_overall_phonetic:
+                # 必要な場合のみ、全体g2pk変換を追加で計算
                 overall_phonetic = self.g2pk_wrapper.convert(korean_text)
                 result['phonetic_hangul'] = overall_phonetic
                 
