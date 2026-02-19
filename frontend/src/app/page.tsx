@@ -126,11 +126,12 @@ export default function ConvertPage() {
         </defs>
       </svg>
       <header className="shrink-0 px-6 py-8 flex flex-col items-center justify-center text-center">
+        <h1 className="sr-only">カナルビ屋 - 韓国語・ハングルをかな読みに変換</h1>
         <div className="flex flex-row items-center justify-center gap-3 sm:gap-4 mb-5">
           <img src="/icon.svg" alt="" className="h-12 w-12 sm:h-14 sm:w-14 md:h-[4.5rem] md:w-[4.5rem] rounded-xl shrink-0" />
           <img
             src="/title-logo.svg"
-            alt="カナルビ屋"
+            alt=""
             className="w-48 sm:w-60 md:w-64 h-auto min-h-[2rem] object-contain object-center animate-fade-in-up animate-delay-100 opacity-0"
           />
         </div>
@@ -244,7 +245,6 @@ export default function ConvertPage() {
                 <span className="loading-dot inline-block w-1.5 h-1.5 rounded-full bg-violet-400" />
               </span>
               <span className="text-sm text-violet-700/90 font-rounded">ちょっと待ってね</span>
-              <span className="text-violet-400" aria-hidden>💜</span>
             </div>
           )}
 
@@ -423,7 +423,7 @@ export default function ConvertPage() {
         </section>
 
         <section className="mt-12 pt-8 pb-6 text-center">
-          <p className="text-sm text-slate-600/90 mb-3 font-rounded">問い合わせはこちらにお願いします</p>
+          <p className="text-sm text-slate-600/90 mb-3 font-rounded">問い合わせ、ご意見はこちらからお願いします</p>
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
             <a
               href="https://zenn.dev/m70ng"

@@ -1,3 +1,6 @@
-# クローラー対策: インデックスさせない
+# カナルビ屋 - 検索エンジンにインデックスを許可
 User-agent: *
-Disallow: /
+Allow: /
+
+Sitemap: https://kanarubiya.com/sitemap.xml
+

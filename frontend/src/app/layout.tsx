@@ -20,13 +20,34 @@ const mplusRounded = M_PLUS_Rounded_1c({
 });
 
 export const metadata: Metadata = {
-  title: "カナルビ屋",
-  description: "歌詞・韓国語を入力してかな読みに変換。カナルビ屋",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://kanarubiya.com"),
+  title: {
+    default: "カナルビ屋｜韓国語・ハングルをかな読みに変換",
+    template: "%s｜カナルビ屋",
+  },
+  description:
+    "カナルビで韓国語・ハングルの歌詞やテキストをかな読みに変換。コピペするだけで読める。歌詞、ドラマのセリフ、日常会話まで。無料で使えるカナルビ（ルビ振り）ツール。",
+  keywords: [
+    "カナルビ",
+    "韓国語 かな",
+    "ハングル 読み",
+    "韓国語 変換",
+    "歌詞 かな",
+    "ハングル かな変換",
+    "韓国語 ルビ",
+  ],
   icons: { icon: "/icon.svg" },
   robots: {
-    index: false,
-    follow: false,
-    googleBot: { index: false, follow: false },
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  openGraph: {
+    title: "カナルビ屋｜韓国語・ハングルをかな読みに変換",
+    description:
+      "韓国語・ハングルをコピペするだけでかな読みに。歌詞や日常会話に。無料のカナルビツール。",
+    type: "website",
+    locale: "ja_JP",
   },
 };
 
