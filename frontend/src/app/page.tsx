@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Copy, Loader2, BookPlus, Music2, FileText, Users, ArrowRightLeft, ArrowUp, ClipboardPaste } from "lucide-react"
+import { Copy, Loader2, BookPlus, Music2, FileText, Users, ArrowRightLeft, ArrowUp, ClipboardPaste, Sparkles } from "lucide-react"
 import { convertText, addDictionaryEntry } from "@/utils/kanaApi"
 
 export default function ConvertPage() {
@@ -30,6 +30,19 @@ export default function ConvertPage() {
   const [dictSuccess, setDictSuccess] = useState<string | null>(null)
   const [pasteSuccess, setPasteSuccess] = useState(false)
   const lastSelectionRef = useRef("")
+
+  const SAMPLE_TEXTS = [
+    { label: "歌詞っぽい", text: "그래요 난 널 사랑해 언제나 믿어" },
+    { label: "あいさつ", text: "안녕하세요! 오늘 날씨가 좋네요." },
+    { label: "日常会話", text: "뭐 해요? 저는 한국어 공부하고 있어요." },
+    { label: "このアプリ", text: "이 앱으로 노래 가사 읽기 쉬워졌어요. 감사합니다!" },
+    { label: "短い会話", text: "잘 지냈어요? 네, 덕분에 잘 지냈어요." },
+  ] as const
+  const [sampleIndex, setSampleIndex] = useState(0)
+  const handleInsertSample = () => {
+    setInput(SAMPLE_TEXTS[sampleIndex].text)
+    setSampleIndex((i) => (i + 1) % SAMPLE_TEXTS.length)
+  }
 
   const handleConvert = async () => {
     const text = input.trim()
@@ -155,19 +168,32 @@ export default function ConvertPage() {
         <div className="shrink-0 rounded-[1.25rem] bg-convert-frame p-3 border border-slate-200/50 animate-fade-in-up animate-delay-200 opacity-0 [border-width:0.5px]">
           {/* 入力エリア（結果エリアと同じヘッダー＋本文レイアウト） */}
           <div className="relative rounded-xl bg-white border border-slate-200/70 overflow-hidden [border-width:0.5px]">
-            <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-slate-100 bg-slate-50/80">
+            <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-slate-100 bg-slate-50/80 flex-wrap">
               <span className="text-sm text-slate-500">入力</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handlePaste}
-                disabled={isConverting}
-                className="h-8 px-3 text-slate-600 text-sm font-bold font-rounded"
-              >
-                <ClipboardPaste className="h-5 w-5 mr-1.5" stroke="url(#iconGrad)" />
-                {pasteSuccess ? "貼り付け✓" : "貼り付け"}
-              </Button>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleInsertSample}
+                  disabled={isConverting}
+                  className="h-8 px-3 text-slate-600 text-sm font-bold font-rounded"
+                >
+                  <Sparkles className="h-4 w-4 mr-1.5 text-violet-500" />
+                  例文で試す
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handlePaste}
+                  disabled={isConverting}
+                  className="h-8 px-3 text-slate-600 text-sm font-bold font-rounded"
+                >
+                  <ClipboardPaste className="h-5 w-5 mr-1.5" stroke="url(#iconGrad)" />
+                  {pasteSuccess ? "貼り付け✓" : "貼り付け"}
+                </Button>
+              </div>
             </div>
             <Textarea
               placeholder="歌詞・韓国語を貼り付け…"
@@ -194,16 +220,33 @@ export default function ConvertPage() {
               </Button>
             </div>
           </div>
+          <p className="mt-1.5 px-1 text-[11px] text-slate-400/90 font-rounded" aria-live="polite">
+            {input.length} 文字
+          </p>
 
           {/* 注意点 */}
           <div className="mt-3 px-1">
             <p className="text-sm text-slate-500 leading-relaxed space-y-1 font-semibold">
               <span className="block">・英語は変換されずそのまま出力されます。</span>
-              <span className="block">・機能には制限があり、稀に変換されずに出力されるハングルがあります。その際はぜひ辞書登録へのご協力願います。</span>
-              <span className="block">・長いと出力に数秒かかる場合がございます。</span>
+              <span className="block">・機能や精度には限界があり、時々変換されずに出力されるハングルがあります。その際はぜひ辞書登録へのご協力願います。🙇</span>
+              <span className="block">・初回、または文字数が多いと、出力に数十秒かかる場合がございます。すいません！^^;</span>
               <span className="block">・ご自由に変換結果はお使いいただけます。</span>
             </p>
           </div>
+
+          {/* 変換中ローディング（可愛い） */}
+          {isConverting && (
+            <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-violet-200/60 bg-violet-50/60 py-6 px-4">
+              <span className="text-sm text-violet-700/90 font-rounded">変換中</span>
+              <span className="inline-flex gap-0.5">
+                <span className="loading-dot inline-block w-1.5 h-1.5 rounded-full bg-violet-400" />
+                <span className="loading-dot inline-block w-1.5 h-1.5 rounded-full bg-violet-400" />
+                <span className="loading-dot inline-block w-1.5 h-1.5 rounded-full bg-violet-400" />
+              </span>
+              <span className="text-sm text-violet-700/90 font-rounded">ちょっと待ってね</span>
+              <span className="text-violet-400" aria-hidden>💜</span>
+            </div>
+          )}
 
           {/* 結果は出たときのみ表示 */}
           {result && (
@@ -311,14 +354,14 @@ export default function ConvertPage() {
           )}
         </div>
 
-        <section className="mt-12 pt-10 border-t border-sky-200/40">
+        <section className="mt-12 pt-10 border-t border-violet-200/40">
           {/* デスクトップ時は一枚目のように枠内にFeatureを入れ込む */}
           <div className="md:rounded-[1.25rem] md:bg-convert-frame md:p-4 md:border md:border-slate-200/50 md:[border-width:0.5px]">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-              <article className="bg-white/80 backdrop-blur-sm rounded-2xl border border-sky-200/50 p-4 md:border-sky-300/60 animate-fade-in-up animate-delay-300 opacity-0 [border-width:0.5px]">
+              <article className="bg-white/80 backdrop-blur-sm rounded-2xl border border-violet-200/50 p-4 md:border-violet-300/60 animate-fade-in-up animate-delay-300 opacity-0 [border-width:0.5px]">
                 <div className="flex items-start gap-4">
-                  <div className="shrink-0 w-12 h-12 rounded-xl bg-sky-100/80 flex items-center justify-center">
-                    <Music2 className="h-6 w-6 text-sky-600/90" />
+                  <div className="shrink-0 w-12 h-12 rounded-xl bg-violet-100/80 flex items-center justify-center">
+                    <Music2 className="h-6 w-6 text-violet-600/90" />
                   </div>
                   <div>
                     <h2 className="font-semibold text-slate-800 text-base mb-1">
@@ -330,10 +373,10 @@ export default function ConvertPage() {
                   </div>
                 </div>
               </article>
-              <article className="bg-white/80 backdrop-blur-sm rounded-2xl border border-amber-200/50 p-4 md:border-amber-300/60 animate-fade-in-up animate-delay-400 opacity-0 [border-width:0.5px]">
+              <article className="bg-white/80 backdrop-blur-sm rounded-2xl border border-pink-200/50 p-4 md:border-pink-300/60 animate-fade-in-up animate-delay-400 opacity-0 [border-width:0.5px]">
                 <div className="flex items-start gap-4">
-                  <div className="shrink-0 w-10 h-10 rounded-xl bg-amber-100/80 flex items-center justify-center">
-                    <FileText className="h-5 w-5 text-amber-700/90" />
+                  <div className="shrink-0 w-10 h-10 rounded-xl bg-pink-100/80 flex items-center justify-center">
+                    <FileText className="h-5 w-5 text-pink-600/90" />
                   </div>
                   <div>
                     <h2 className="font-semibold text-slate-800 text-base mb-1">
@@ -360,10 +403,10 @@ export default function ConvertPage() {
                   </div>
                 </div>
               </article>
-              <article className="bg-white/80 backdrop-blur-sm rounded-2xl border border-rose-200/50 p-4 md:border-rose-300/60 animate-fade-in-up opacity-0 animate-delay-600 [border-width:0.5px]">
+              <article className="bg-white/80 backdrop-blur-sm rounded-2xl border border-purple-200/50 p-4 md:border-purple-300/60 animate-fade-in-up opacity-0 animate-delay-600 [border-width:0.5px]">
                 <div className="flex items-start gap-4">
-                  <div className="shrink-0 w-10 h-10 rounded-xl bg-rose-100/80 flex items-center justify-center">
-                    <ArrowRightLeft className="h-5 w-5 text-rose-600/90" />
+                  <div className="shrink-0 w-10 h-10 rounded-xl bg-purple-100/80 flex items-center justify-center">
+                    <ArrowRightLeft className="h-5 w-5 text-purple-600/90" />
                   </div>
                   <div>
                     <h2 className="font-semibold text-slate-800 text-base mb-1">
@@ -376,6 +419,30 @@ export default function ConvertPage() {
                 </div>
               </article>
             </div>
+          </div>
+        </section>
+
+        <section className="mt-12 pt-8 pb-6 text-center">
+          <p className="text-sm text-slate-600/90 mb-3 font-rounded">問い合わせはこちらにお願いします</p>
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+            <a
+              href="https://zenn.dev/m70ng"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-slate-700 hover:text-violet-600 font-medium font-rounded transition-colors"
+            >
+              <img src="https://zenn.dev/favicon.ico" alt="" className="w-5 h-5 rounded" width={20} height={20} />
+              Zenn
+            </a>
+            <a
+              href="https://x.com/MeowNotFound"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-slate-700 hover:text-violet-600 font-medium font-rounded transition-colors"
+            >
+              <img src="https://x.com/favicon.ico" alt="" className="w-5 h-5 rounded" width={20} height={20} />
+              X (Twitter)
+            </a>
           </div>
         </section>
       </main>
