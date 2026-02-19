@@ -33,10 +33,10 @@ export default function ConvertPage() {
 
   const SAMPLE_TEXTS = [
     { label: "歌詞っぽい", text: "그래요 난 널 사랑해 언제나 믿어" },
-    { label: "あいさつ", text: "안녕하세요! 오늘 날씨가 좋네요." },
-    { label: "日常会話", text: "뭐 해요? 저는 한국어 공부하고 있어요." },
-    { label: "このアプリ", text: "이 앱으로 노래 가사 읽기 쉬워졌어요. 감사합니다!" },
-    { label: "短い会話", text: "잘 지냈어요? 네, 덕분에 잘 지냈어요." },
+    { label: "このアプリ", text: "이 앱 진짜 대박이당! 이렇게 좋은 앱을 만들어주셔서 감사하네여ㅠㅠ" },
+    { label: "日常会話", text: "뭐 해요? 저는 한국어 공부하고 있어요. 내일도 한국어 공부할거에요!" },
+    { label: "このアプリ", text: "여러분! 카나루비야라는 앱 알아요? 이 앱으로 한국어 노래 가사 읽기가 엄청 쉬워졌네요!" },
+    { label: "短い会話", text: "어제 소녀시대 콘서트를 갔는데 연출 짱이었어요. 가길 잘했어요ㅎㅎ" },
   ] as const
   const [sampleIndex, setSampleIndex] = useState(0)
   const handleInsertSample = () => {
