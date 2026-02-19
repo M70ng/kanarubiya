@@ -114,9 +114,11 @@ export default function ConvertPage() {
       </svg>
       <header className="shrink-0 px-6 py-8 flex flex-col items-center justify-center text-center">
         <img src="/icon.svg" alt="" className="h-[4.5rem] w-[4.5rem] rounded-xl mb-5" />
-        <h1 className="text-3xl sm:text-5xl font-medium text-slate-800 tracking-tight font-rounded animate-fade-in-up animate-delay-100 opacity-0">
-          カナルビ屋
-        </h1>
+        <img
+          src="/title-logo.svg"
+          alt="カナルビ屋"
+          className="w-48 sm:w-60 md:w-64 h-auto min-h-[2rem] object-contain object-center animate-fade-in-up animate-delay-100 opacity-0"
+        />
         <p className="text-lg text-slate-600/90 mt-2 animate-fade-in-up animate-delay-200 opacity-0">
           ハングル・韓国語をコピペするだけで、すぐにかな読みに変換されます！
         </p>
