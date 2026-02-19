@@ -113,12 +113,14 @@ export default function ConvertPage() {
         </defs>
       </svg>
       <header className="shrink-0 px-6 py-8 flex flex-col items-center justify-center text-center">
-        <img src="/icon.svg" alt="" className="h-[4.5rem] w-[4.5rem] rounded-xl mb-5" />
-        <img
-          src="/title-logo.svg"
-          alt="カナルビ屋"
-          className="w-48 sm:w-60 md:w-64 h-auto min-h-[2rem] object-contain object-center animate-fade-in-up animate-delay-100 opacity-0"
-        />
+        <div className="flex flex-row items-center justify-center gap-3 sm:gap-4 mb-5">
+          <img src="/icon.svg" alt="" className="h-12 w-12 sm:h-14 sm:w-14 md:h-[4.5rem] md:w-[4.5rem] rounded-xl shrink-0" />
+          <img
+            src="/title-logo.svg"
+            alt="カナルビ屋"
+            className="w-48 sm:w-60 md:w-64 h-auto min-h-[2rem] object-contain object-center animate-fade-in-up animate-delay-100 opacity-0"
+          />
+        </div>
         <p className="text-lg text-slate-600/90 mt-2 animate-fade-in-up animate-delay-200 opacity-0">
           ハングル・韓国語をコピペするだけで、すぐにかな読みに変換されます！
         </p>
@@ -378,16 +380,6 @@ export default function ConvertPage() {
         </section>
       </main>
 
-      <footer className="shrink-0 bg-slate-800/5 mt-auto">
-        <div className="max-w-3xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-          <p className="text-base text-slate-600/90">
-            カナルビ屋 — 韓国語・歌詞をかな読みに
-          </p>
-          <p className="text-sm text-slate-500/80">
-            © {new Date().getFullYear()} カナルビ屋
-          </p>
-        </div>
-      </footer>
     </div>
   )
 }
