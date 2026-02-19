@@ -1,3 +1,21 @@
+"""
+韓国語テキストを日本語カナに変換する変換ロジックの中核
+
+■ 主に使う関数
+  convert()  … 公開API。外部から呼ぶエントリポイント
+
+■ 変換フロー（use_g2pk=True がデフォルト）
+  convert()
+    └─ _convert_with_g2pk_full_text()  … 全文一括変換の実処理
+           └─ apply_exceptions()       … 例外辞書を適用
+           └─ g2pk_wrapper.convert()   … g2pkで発音記号化（1回）
+           └─ hangul_to_kana()         … カナへ変換
+
+■ その他の関数（以前のバージョンで使っていたもの）
+  convert_with_details()  … トークンごとの詳細付きで返す（UI向け）
+  split_mixed_text()      … ハングル/英数字/記号で分割
+  is_hangul()             … ハングル判定
+"""
 from .g2pk_wrapper import G2pkWrapper
 from .hangul2kana import hangul_to_kana, get_merged_exceptions
 import re
@@ -34,7 +52,7 @@ class KoreanToKanaConverter:
     
     def apply_exceptions(self, text: str) -> str:
         """
-        例外辞書を適用（組み込み＋ユーザー追加。g2pk処理前）
+        例外辞書を適用（g2pk処理前）
         
         Args:
             text: 適用するテキスト
@@ -50,8 +68,8 @@ class KoreanToKanaConverter:
 
     def _convert_with_g2pk_full_text(self, korean_text: str) -> str:
         """
+        g2pには全文を渡す。基本的にトークン別じゃなくてこっち使う！
         全文一括で変換: 例外辞書適用 → g2p 1回 → hangul_to_kana。
-        速度と文脈考慮のため、g2pには全文を渡す。
         """
         text_with_exceptions = self.apply_exceptions(korean_text)
         phonetic = self.g2pk_wrapper.convert(text_with_exceptions)

@@ -1,4 +1,15 @@
 # core/hangul2kana.py
+"""
+ハングル→カナ変換モジュール
+
+自作の辞書（hangul_kana_dict.json）に基づき、ハングルを日本語カナに変換する。
+一部の特殊読みには例外辞書（kana_exceptions.json / user_kana_exceptions.json）を使用する。
+
+【外部から利用する主な関数】
+  - hangul_to_kana(text)    … ハングル文字列をカナに変換（1文字ずつ辞書引き）
+  - get_merged_exceptions() … 組み込み＋ユーザー例外辞書をマージした dict を返す
+  - add_user_exception(hangul, kana) … ユーザー辞書に1件追加してファイル（user_kana_exceptions.json）に保存
+"""
 import json
 import os
 from typing import Optional

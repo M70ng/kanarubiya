@@ -34,17 +34,16 @@ class G2pkWrapper:
     def convert(self, text: str, descriptive: bool = True) -> str:
         """
         韓国語テキストをg2pkで処理して発音に近いハングルに変換。
-        全文を1回g2pに渡し、文脈を考慮した発音・MeCab呼び出し回数の削減を行う。
 
         Args:
-            text: 韓国語テキスト（英語・記号・数字・カナ混じり可。例外辞書適用後の想定）
+            text: 韓国語テキスト（英語・記号・数字・カナ混じり可。例外辞書適用後のテキスト）
             descriptive: 実際の発音モード（True推奨）
 
         Returns:
-            発音に近いハングル文字列（非ハングルはそのまま維持）
+            発音に近いハングル表記の文字列（非ハングルはそのまま維持）
         """
         try:
-            # 全文を1回だけg2pに渡す（g2pk設計に沿った使い方）
+            # 全文を1回だけg2pに渡す
             result = self.g2p(text, descriptive=descriptive)
             return self._clean_result(result)
         except Exception as e:
