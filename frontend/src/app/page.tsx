@@ -166,9 +166,8 @@ export default function ConvertPage() {
           </div>
         </div>
 
-        {/* 変換入力・出力をひとつの枠内に */}
         <div className="shrink-0 rounded-[1.25rem] bg-convert-frame p-3 border border-slate-200/50 animate-fade-in-up animate-delay-200 opacity-0 [border-width:0.5px]">
-          {/* 入力エリア（結果エリアと同じヘッダー＋本文レイアウト） */}
+          {/* 入力エリア */}
           <div className="relative rounded-xl bg-white border border-slate-200/70 overflow-hidden [border-width:0.5px]">
             <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-slate-100 bg-slate-50/80 flex-wrap">
               <span className="text-sm text-slate-500">入力</span>
@@ -181,8 +180,8 @@ export default function ConvertPage() {
                     disabled={isConverting}
                     className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-200 disabled:opacity-60"
                   >
-                    <option value="keep">そのまま</option>
-                    <option value="korean">韓国語読みで変換</option>
+                    <option value="keep">韓国語読みに変換</option>
+                    <option value="korean">変換しない</option>
                   </select>
                 </label>
                 <Button
@@ -241,24 +240,23 @@ export default function ConvertPage() {
           {/* 注意点 */}
           <div className="mt-3 px-1">
             <p className="text-sm text-slate-500 leading-relaxed space-y-1 font-semibold">
-              <span className="block">・英語は変換されずそのまま出力されます。</span>
-              <span className="block">・数字は「そのまま」か「韓国語読みで変換」を選択できます。</span>
-              <span className="block">・機能や精度には限界があり、時々変換されずに出力されるハングルがあります。その際はぜひ辞書登録へのご協力願います。🙇</span>
-              <span className="block">・初回、または文字数が多いと、出力に数十秒かかる場合がございます。すいません！^^;</span>
+              <span className="block">・英語、記号、日本語などハングル以外の文字は変換されずにそのまま出力されます。</span>
+              <span className="block">・数字のみ「そのまま」（変換せずそのまま）か「韓国語の読み方にして変換」を選択できます。</span>
+              <span className="block">・精度や正確性には限界があります。ご了承ください。</span>
+              <span className="block">・初回は、出力に数秒かかる場合がございます。すいません！^^;</span>
               <span className="block">・ご自由に変換結果はお使いいただけます。</span>
             </p>
           </div>
 
-          {/* 変換中ローディング（可愛い） */}
+          {/* 変換中ローディング */}
           {isConverting && (
             <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-violet-200/60 bg-violet-50/60 py-6 px-4">
-              <span className="text-sm text-violet-700/90 font-rounded">変換中</span>
+              <span className="text-sm text-violet-700/90 font-rounded">変換中です</span>
               <span className="inline-flex gap-0.5">
                 <span className="loading-dot inline-block w-1.5 h-1.5 rounded-full bg-violet-400" />
                 <span className="loading-dot inline-block w-1.5 h-1.5 rounded-full bg-violet-400" />
                 <span className="loading-dot inline-block w-1.5 h-1.5 rounded-full bg-violet-400" />
               </span>
-              <span className="text-sm text-violet-700/90 font-rounded">ちょっと待ってね</span>
             </div>
           )}
 
@@ -369,7 +367,6 @@ export default function ConvertPage() {
         </div>
 
         <section className="mt-12 pt-10 border-t border-violet-200/40">
-          {/* デスクトップ時は一枚目のように枠内にFeatureを入れ込む */}
           <div className="md:rounded-[1.25rem] md:bg-convert-frame md:p-4 md:border md:border-slate-200/50 md:[border-width:0.5px]">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
               <article className="bg-white/80 backdrop-blur-sm rounded-2xl border border-violet-200/50 p-4 md:border-violet-300/60 animate-fade-in-up animate-delay-300 opacity-0 [border-width:0.5px]">
@@ -379,10 +376,10 @@ export default function ConvertPage() {
                   </div>
                   <div>
                     <h2 className="font-semibold text-slate-800 text-base mb-1">
-                      最新の曲も、有名じゃない曲もいち早くかな読みに。
+                      最新の曲も、有名じゃないあの曲も、手軽に変換！
                     </h2>
                     <p className="text-base text-slate-600/90 leading-relaxed">
-                      歌詞を貼るだけ！発売されたばかりの新曲も、すぐかな読みにして歌えます。
+                      オリジナル歌詞を貼るだけ！発売されたばかりの新曲も、すぐにかな読みに変換して歌えます。
                     </p>
                   </div>
                 </div>
@@ -397,7 +394,7 @@ export default function ConvertPage() {
                       韓国語スクリプトもすぐに
                     </h2>
                     <p className="text-base text-slate-600/90 leading-relaxed">
-                      ドラマや動画のセリフも、すぐかな読みに変換して読めます。
+                      ドラマや動画のセリフ、どんなテキストでも、すぐにかな読みに変換して読めます。
                     </p>
                   </div>
                 </div>
@@ -412,7 +409,7 @@ export default function ConvertPage() {
                       みんなで作り上げるより正確な辞書
                     </h2>
                     <p className="text-base text-slate-600/90 leading-relaxed">
-                      変換漏れを報告して読みを追加。あなたの追加は即時に反映され、より正確になります。
+                      報告機能で新たに読みを追加。あなたの追加は即時に反映されて、より正確になります。
                     </p>
                   </div>
                 </div>
@@ -427,7 +424,8 @@ export default function ConvertPage() {
                       日本語→ハングルも導入予定
                     </h2>
                     <p className="text-base text-slate-600/90 leading-relaxed">
-                      逆方向の変換にも対応予定です。お楽しみに。
+                      逆方向の変換にも対応する予定です！例）こんにちは→콘니찌외
+                      お楽しみに☺
                     </p>
                   </div>
                 </div>
