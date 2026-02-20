@@ -16,9 +16,35 @@
   split_mixed_text()      … ハングル/英数字/記号で分割
   is_hangul()             … ハングル判定
 """
+from collections import Counter
+
 from .g2pk_wrapper import G2pkWrapper
 from .hangul2kana import hangul_to_kana, get_merged_exceptions
 import re
+
+
+def count_remaining_hangul(text: str) -> Counter[str]:
+    """
+    変換後の文字列から残ったハングル音節 [가-힣] の頻度を返す。
+
+    Returns:
+        音節をキー、出現回数を値とする Counter
+    """
+    return Counter(re.findall(r"[가-힣]", text))
+
+
+def _warn_remaining_hangul(kana_str: str) -> None:
+    """
+    韓国語→カナ変換後の文字列から残ったハングル [가-힣] を検出し、
+    残っている場合のみ頻度付きで警告ログを出力する。
+    （頻度の高い順で表示し、上位から潰しやすくする）
+    """
+    counter = count_remaining_hangul(kana_str)
+    if counter:
+        ranked = counter.most_common()
+        items = ", ".join(f"{s}({c})" for s, c in ranked)
+        print(f"[WARN] Remaining Hangul detected: [{items}]")
+
 
 class KoreanToKanaConverter:
     def __init__(self):
@@ -103,6 +129,7 @@ class KoreanToKanaConverter:
                 result = ''.join(result_tokens)
                 print(f"直接変換: {korean_text} → {result}")
 
+            _warn_remaining_hangul(result)
             return result
 
         except Exception as e:
@@ -171,6 +198,7 @@ class KoreanToKanaConverter:
 
             result['tokens'] = token_details
             result['kana'] = final_result
+            _warn_remaining_hangul(final_result)
 
         except Exception as e:
             result['error'] = str(e)
