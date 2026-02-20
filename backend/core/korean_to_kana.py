@@ -92,31 +92,78 @@ class KoreanToKanaConverter:
                 result = result.replace(exc, kana)
         return result
 
-    def _convert_with_g2pk_full_text(self, korean_text: str) -> str:
+    def _is_english_or_mixed_alnum(self, token: str) -> bool:
+        """英語または英数字混在トークンか（g2pk の convert_eng で変換させたくないもの）"""
+        return bool(re.fullmatch(r"[a-zA-Z0-9'']+", token) and re.search(r"[a-zA-Z]", token))
+
+    def _is_numeric_only(self, token: str) -> bool:
+        """数字のみのトークンか（g2pk の convert_num の対象）"""
+        return bool(re.fullmatch(r"[0-9]+", token))
+
+    def _should_mask_token(self, token: str, convert_numbers: bool) -> bool:
         """
-        g2pには全文を渡す。基本的にトークン別じゃなくてこっち使う！
-        全文一括で変換: 例外辞書適用 → g2p 1回 → hangul_to_kana。
+        g2pk に渡す前マスクすべきトークンか。
+        英語・英数字混在は常にマスク。数字のみは convert_numbers=False のときのみマスク。
+        """
+        if self._is_english_or_mixed_alnum(token):
+            return True
+        if self._is_numeric_only(token) and not convert_numbers:
+            return True
+        return False
+
+    def _convert_with_g2pk_full_text(
+        self,
+        korean_text: str,
+        convert_numbers: bool = False,
+        return_phonetic: bool = False,
+    ) -> str | tuple[str, str]:
+        """
+        英語（＋convert_numbers=False のとき数字）をプレースホルダーでマスク → g2pk 1回 → アンマスク。
+        g2pk には「英語→ハングル」「数字→読み」変換機能がありオプションで止められないため、
+        事前マスクで回避する。g2pk 呼び出しは1回のみ。
         """
         text_with_exceptions = self.apply_exceptions(korean_text)
-        phonetic = self.g2pk_wrapper.convert(text_with_exceptions)
-        return hangul_to_kana(phonetic)
+        tokens = self.split_mixed_text(text_with_exceptions)
+        placeholders: list[tuple[str, str]] = []
+        masked_parts = []
+        for token in tokens:
+            if self._should_mask_token(token, convert_numbers):
+                # 数字を含むと g2pk の convert_num が変換して壊れるので、PUA のみで一意なプレースホルダーを使う
+                ph = "\uE000" + chr(0xE002 + len(placeholders)) + "\uE001"
+                placeholders.append((ph, token))
+                masked_parts.append(ph)
+            else:
+                masked_parts.append(token)
+        masked_text = "".join(masked_parts)
+        phonetic = self.g2pk_wrapper.convert(masked_text)
+        for ph, orig in placeholders:
+            phonetic = phonetic.replace(ph, orig)
+        result = hangul_to_kana(phonetic)
+        for ph, orig in placeholders:
+            result = result.replace(ph, orig)
+        if return_phonetic:
+            return result, phonetic
+        return result
 
-    def convert(self, korean_text: str, use_g2pk: bool = True) -> str:
+    def convert(
+        self, korean_text: str, use_g2pk: bool = True, convert_numbers: bool = False
+    ) -> str:
         """
         韓国語テキストを日本語カナに変換
-        ハングル部分のみを変換し、英語・記号・数字はそのまま残す
+        ハングル部分のみを変換し、英語・記号はそのまま残す。
+        数字は convert_numbers=True のときのみ韓国語読み→カナに変換。
 
         Args:
             korean_text: 韓国語テキスト
             use_g2pk: g2pkを使用するかどうか（True推奨）
+            convert_numbers: 数字を韓国語読みでカナ変換するか（False=そのまま）
 
         Returns:
-            日本語カナ文字列（英語・記号はそのまま）
+            日本語カナ文字列（英語・記号はそのまま。数字は convert_numbers に依存）
         """
         try:
             if use_g2pk:
-                # 全文一括: 例外辞書 → g2p 1回 → hangul_to_kana
-                result = self._convert_with_g2pk_full_text(korean_text)
+                result = self._convert_with_g2pk_full_text(korean_text, convert_numbers=convert_numbers)
                 print(f"g2pk変換: {korean_text} → {result}")
             else:
                 tokens = self.split_mixed_text(korean_text)
@@ -140,6 +187,7 @@ class KoreanToKanaConverter:
         self,
         korean_text: str,
         use_g2pk: bool = True,
+        convert_numbers: bool = False,
         include_overall_phonetic: bool = False,
     ) -> dict:
         """
@@ -148,6 +196,7 @@ class KoreanToKanaConverter:
         Args:
             korean_text: 韓国語テキスト
             use_g2pk: g2pkを使用するかどうか
+            convert_numbers: 数字を韓国語読みでカナ変換するか（False=そのまま）
             include_overall_phonetic: True の場合のみ、phonetic_hangul を返す
 
         Returns:
@@ -158,6 +207,7 @@ class KoreanToKanaConverter:
             'phonetic_hangul': korean_text,
             'kana': korean_text,
             'use_g2pk': use_g2pk,
+            'convert_numbers': convert_numbers,
             'tokens': []
         }
 
@@ -165,14 +215,19 @@ class KoreanToKanaConverter:
             tokens = self.split_mixed_text(korean_text)
 
             if use_g2pk:
-                # 全文一括: 例外辞書 → g2p 1回 → hangul_to_kana
-                text_with_exceptions = self.apply_exceptions(korean_text)
-                phonetic = self.g2pk_wrapper.convert(text_with_exceptions)
-                final_result = hangul_to_kana(phonetic)
+                out = self._convert_with_g2pk_full_text(
+                    korean_text,
+                    convert_numbers=convert_numbers,
+                    return_phonetic=include_overall_phonetic,
+                )
                 if include_overall_phonetic:
-                    result['phonetic_hangul'] = phonetic
+                    final_result, result['phonetic_hangul'] = out
+                else:
+                    final_result = out
+                text_with_exceptions = self.apply_exceptions(korean_text)
+                tokens = self.split_mixed_text(text_with_exceptions)
                 result_parts = self.split_mixed_text(final_result)
-                phonetic_parts = self.split_mixed_text(phonetic)
+                phonetic_parts = self.split_mixed_text(result.get('phonetic_hangul', korean_text))
             else:
                 result_tokens = []
                 for token in tokens:

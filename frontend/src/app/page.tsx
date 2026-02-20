@@ -29,6 +29,7 @@ export default function ConvertPage() {
   const [dictSubmitting, setDictSubmitting] = useState(false)
   const [dictSuccess, setDictSuccess] = useState<string | null>(null)
   const [pasteSuccess, setPasteSuccess] = useState(false)
+  const [convertNumbers, setConvertNumbers] = useState(false)
   const lastSelectionRef = useRef("")
 
   const SAMPLE_TEXTS = [
@@ -54,7 +55,7 @@ export default function ConvertPage() {
     setResult("")
     setIsConverting(true)
     try {
-      const res = await convertText(text, true)
+      const res = await convertText(text, true, convertNumbers)
       setResult(res.kana)
     } catch (e) {
       setError(e instanceof Error ? e.message : "変換に失敗しました")
@@ -171,7 +172,19 @@ export default function ConvertPage() {
           <div className="relative rounded-xl bg-white border border-slate-200/70 overflow-hidden [border-width:0.5px]">
             <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-slate-100 bg-slate-50/80 flex-wrap">
               <span className="text-sm text-slate-500">入力</span>
-              <div className="flex items-center gap-1 sm:gap-2">
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                <label className="flex items-center gap-1.5 text-sm text-slate-600">
+                  <span className="whitespace-nowrap">数字:</span>
+                  <select
+                    value={convertNumbers ? "korean" : "keep"}
+                    onChange={(e) => setConvertNumbers(e.target.value === "korean")}
+                    disabled={isConverting}
+                    className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-200 disabled:opacity-60"
+                  >
+                    <option value="keep">そのまま</option>
+                    <option value="korean">韓国語読みで変換</option>
+                  </select>
+                </label>
                 <Button
                   type="button"
                   variant="ghost"
@@ -229,6 +242,7 @@ export default function ConvertPage() {
           <div className="mt-3 px-1">
             <p className="text-sm text-slate-500 leading-relaxed space-y-1 font-semibold">
               <span className="block">・英語は変換されずそのまま出力されます。</span>
+              <span className="block">・数字は「そのまま」か「韓国語読みで変換」を選択できます。</span>
               <span className="block">・機能や精度には限界があり、時々変換されずに出力されるハングルがあります。その際はぜひ辞書登録へのご協力願います。🙇</span>
               <span className="block">・初回、または文字数が多いと、出力に数十秒かかる場合がございます。すいません！^^;</span>
               <span className="block">・ご自由に変換結果はお使いいただけます。</span>
