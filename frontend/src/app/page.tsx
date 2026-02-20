@@ -264,7 +264,7 @@ export default function ConvertPage() {
               <span className="block">・英語、記号、日本語などハングル以外の文字は変換されずにそのまま出力されます。</span>
               <span className="block">・数字は上記の切り替えで「そのまま」か「韓国語読みで変換」を選べます。</span>
               <span className="block">・精度や正確性には限界があります。ご了承ください。</span>
-              <span className="block">・初回は、出力に数秒かかる場合がございます。すいません！^^;</span>
+              <span className="block">・初回のみ起動に時間がかかり、結果が出るまで数十秒かかる場合がございます。😢すみません！😢</span>
               <span className="block">・ご自由に変換結果はお使いいただけます。</span>
             </p>
           </div>
