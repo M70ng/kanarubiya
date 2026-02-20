@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Copy, Loader2, BookPlus, Music2, FileText, Users, ArrowRightLeft, ArrowUp, ClipboardPaste, Sparkles } from "lucide-react"
+import { Copy, Loader2, BookPlus, Music2, FileText, Users, ArrowRightLeft, ChevronRight, ClipboardPaste, Sparkles } from "lucide-react"
 import { convertText, addDictionaryEntry } from "@/utils/kanaApi"
 
 export default function ConvertPage() {
@@ -155,11 +155,11 @@ export default function ConvertPage() {
               <p className="text-xs text-slate-500 mb-1.5 font-bold">変換前</p>
               <p className="text-base text-slate-800 leading-relaxed whitespace-pre-wrap">그래요 난 널 사랑해 언제나 믿어</p>
             </div>
-            <div className="flex items-center justify-center py-2 sm:py-0 sm:px-2 bg-slate-100/60 shrink-0">
+            <div className="flex items-center justify-center py-2 sm:py-0 sm:px-2 bg-slate-100/60 shrink-0 border-x border-slate-200/70">
               <span className="text-2xl text-slate-500 animate-pulse hidden sm:inline" aria-hidden>→</span>
               <span className="text-2xl text-slate-500 animate-pulse sm:hidden" aria-hidden>↓</span>
             </div>
-            <div className="flex-1 px-4 py-3 bg-slate-50/30 sm:bg-transparent sm:border-l border-slate-200/70">
+            <div className="flex-1 px-4 py-3 bg-slate-50/30 sm:bg-transparent">
               <p className="text-xs text-slate-500 mb-1.5 font-bold">かな変換後</p>
               <p className="text-base text-slate-800 leading-relaxed whitespace-pre-wrap">グレヨ ナン ノル サランヘ オンジェナ ミド</p>
             </div>
@@ -169,30 +169,18 @@ export default function ConvertPage() {
         <div className="shrink-0 rounded-[1.25rem] bg-convert-frame p-3 border border-slate-200/50 animate-fade-in-up animate-delay-200 opacity-0 [border-width:0.5px]">
           {/* 入力エリア */}
           <div className="relative rounded-xl bg-white border border-slate-200/70 overflow-hidden [border-width:0.5px]">
-            <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-slate-100 bg-slate-50/80 flex-wrap">
+            <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-slate-100 bg-slate-50/80">
               <span className="text-sm text-slate-500">入力</span>
-              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                <label className="flex items-center gap-1.5 text-sm text-slate-600">
-                  <span className="whitespace-nowrap">数字:</span>
-                  <select
-                    value={convertNumbers ? "korean" : "keep"}
-                    onChange={(e) => setConvertNumbers(e.target.value === "korean")}
-                    disabled={isConverting}
-                    className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-200 disabled:opacity-60"
-                  >
-                    <option value="keep">韓国語読みに変換</option>
-                    <option value="korean">変換しない</option>
-                  </select>
-                </label>
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={handleInsertSample}
                   disabled={isConverting}
-                  className="h-8 px-3 text-slate-600 text-sm font-bold font-rounded"
+                  className="h-8 px-3 text-slate-600 text-sm font-semibold font-rounded"
                 >
-                  <Sparkles className="h-4 w-4 mr-1.5 text-violet-500" />
+                  <Sparkles className="h-4 w-4 mr-1 text-violet-500" />
                   例文で試す
                 </Button>
                 <Button
@@ -227,21 +215,54 @@ export default function ConvertPage() {
                 ) : (
                   <>
                     変換する
-                    <ArrowUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </>
                 )}
               </Button>
             </div>
           </div>
-          <p className="mt-1.5 px-1 text-[11px] text-slate-400/90 font-rounded" aria-live="polite">
-            {input.length} 文字
-          </p>
+          <div className="mt-2 px-1 flex items-center gap-2 flex-wrap">
+            <span className="text-[11px] text-slate-400/90 font-rounded" aria-live="polite">
+              {input.length} 文字
+            </span>
+            <span className="text-slate-300">|</span>
+            <div
+              role="group"
+              aria-label="数字の変換"
+              className="inline-flex rounded-lg bg-slate-100/80 p-0.5 text-[11px]"
+            >
+              <button
+                type="button"
+                onClick={() => setConvertNumbers(false)}
+                disabled={isConverting}
+                className={`rounded-md px-2 py-1 transition-colors disabled:opacity-50 ${
+                  !convertNumbers
+                    ? "bg-white text-slate-700 shadow-sm font-medium"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                数字そのまま
+              </button>
+              <button
+                type="button"
+                onClick={() => setConvertNumbers(true)}
+                disabled={isConverting}
+                className={`rounded-md px-2 py-1 transition-colors disabled:opacity-50 ${
+                  convertNumbers
+                    ? "bg-white text-slate-700 shadow-sm font-medium"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                韓国語読みで変換
+              </button>
+            </div>
+          </div>
 
           {/* 注意点 */}
           <div className="mt-3 px-1">
             <p className="text-sm text-slate-500 leading-relaxed space-y-1 font-semibold">
               <span className="block">・英語、記号、日本語などハングル以外の文字は変換されずにそのまま出力されます。</span>
-              <span className="block">・数字のみ「そのまま」（変換せずそのまま）か「韓国語の読み方にして変換」を選択できます。</span>
+              <span className="block">・数字は上記の切り替えで「そのまま」か「韓国語読みで変換」を選べます。</span>
               <span className="block">・精度や正確性には限界があります。ご了承ください。</span>
               <span className="block">・初回は、出力に数秒かかる場合がございます。すいません！^^;</span>
               <span className="block">・ご自由に変換結果はお使いいただけます。</span>
@@ -274,9 +295,9 @@ export default function ConvertPage() {
                           variant="ghost"
                           size="sm"
                           onClick={openDictDialog}
-                          className="h-8 px-3 text-slate-600 text-sm font-bold"
+                          className="h-8 px-3 text-slate-600 text-sm font-semibold font-rounded"
                         >
-                          <BookPlus className="h-5 w-5 mr-1.5" />
+                          <BookPlus className="h-5 w-5 mr-1 text-violet-500" />
                           辞書に追加
                         </Button>
                       </DialogTrigger>
@@ -347,9 +368,9 @@ export default function ConvertPage() {
                       variant="ghost"
                       size="sm"
                       onClick={handleCopy}
-                      className="h-8 px-3 text-slate-600 text-sm font-bold font-rounded"
+                      className="h-8 px-3 text-slate-600 text-sm font-semibold font-rounded"
                     >
-                      <Copy className="h-5 w-5 mr-1.5" stroke="url(#iconGrad)" />
+                      <Copy className="h-5 w-5 mr-1 text-violet-500" />
                       {copied ? "コピーした" : "コピー"}
                     </Button>
                   </div>
