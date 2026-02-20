@@ -7,17 +7,22 @@ export interface ConvertTextResponse {
   phonetic_hangul: string
   kana: string
   use_g2pk: boolean
+  convert_numbers?: boolean
   error?: string
 }
 
 /**
  * 単一テキストをかな読みに変換（メインAPI）
  */
-export async function convertText(text: string, useG2pk: boolean = true): Promise<ConvertTextResponse> {
+export async function convertText(
+  text: string,
+  useG2pk: boolean = true,
+  convertNumbers: boolean = false
+): Promise<ConvertTextResponse> {
   const response = await fetch(`${API_BASE_URL}/api/kanafy-ko`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, use_g2pk: useG2pk }),
+    body: JSON.stringify({ text, use_g2pk: useG2pk, convert_numbers: convertNumbers }),
   })
   if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
   return response.json()
@@ -58,11 +63,15 @@ export async function addDictionaryEntry(hangul: string, kana: string): Promise<
 /**
  * 複数行を一括でかな読みに変換
  */
-export async function convertBatch(texts: string[], useG2pk: boolean = true): Promise<ConvertTextResponse[]> {
+export async function convertBatch(
+  texts: string[],
+  useG2pk: boolean = true,
+  convertNumbers: boolean = false
+): Promise<ConvertTextResponse[]> {
   const response = await fetch(`${API_BASE_URL}/api/kanafy-ko/batch`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ texts, use_g2pk: useG2pk }),
+    body: JSON.stringify({ texts, use_g2pk: useG2pk, convert_numbers: convertNumbers }),
   })
   if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
   const data = await response.json()

@@ -22,10 +22,12 @@ MAX_UPLOAD_BYTES = 5 * 1024 * 1024  # 5MB
 class KoreanTextRequest(BaseModel):
     text: str = Field(..., max_length=MAX_TEXT_LENGTH)
     use_g2pk: bool = True
+    convert_numbers: bool = False
 
 class KoreanBatchRequest(BaseModel):
     texts: List[Annotated[str, Field(max_length=MAX_TEXT_LENGTH)]] = Field(..., max_length=MAX_BATCH_ITEMS)
     use_g2pk: bool = True
+    convert_numbers: bool = False
 
 class DictionaryAddRequest(BaseModel):
     hangul: str = Field(..., max_length=200)
@@ -37,6 +39,7 @@ class KoreanTextResponse(BaseModel):
     phonetic_hangul: str
     kana: str
     use_g2pk: bool
+    convert_numbers: Optional[bool] = None
     error: Optional[str] = None
 
 class KoreanBatchResponse(BaseModel):
@@ -52,9 +55,12 @@ async def convert_korean_to_kana(request: KoreanTextRequest):
     
     - **text**: 変換する韓国語テキスト
     - **use_g2pk**: g2pkを使用するかどうか（デフォルト: True）
+    - **convert_numbers**: 数字を韓国語読みでカナ変換するか（デフォルト: False）
     """
     try:
-        result = converter.convert_with_details(request.text, request.use_g2pk)
+        result = converter.convert_with_details(
+            request.text, request.use_g2pk, request.convert_numbers
+        )
         return KoreanTextResponse(**result)
     except Exception:
         raise HTTPException(status_code=500, detail="変換に失敗しました。")
@@ -70,7 +76,9 @@ async def convert_korean_batch_to_kana(request: KoreanBatchRequest):
     try:
         results = []
         for text in request.texts:
-            result = converter.convert_with_details(text, request.use_g2pk)
+            result = converter.convert_with_details(
+                text, request.use_g2pk, request.convert_numbers
+            )
             results.append(KoreanTextResponse(**result))
         
         return KoreanBatchResponse(results=results)
