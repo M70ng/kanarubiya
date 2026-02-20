@@ -52,18 +52,15 @@ class G2pkWrapper:
     
     def _clean_result(self, result: str) -> str:
         """
-        g2pkの結果をクリーンアップ
-        
+        g2pkの結果をクリーンアップ。
+        改行は維持し、行内の連続スペース・タブのみを1つにまとめる。
+
         Args:
             result: g2pkの出力結果
-        
+
         Returns:
-            クリーンアップされた文字列
+            クリーンアップされた文字列（改行は維持）
         """
-        # 余分な空白を整理
-        cleaned = re.sub(r'\s+', ' ', result.strip())
-        
-        # 特殊文字や記号を保持（句読点など）
-        # 必要に応じて追加のクリーンアップ処理
-        
-        return cleaned
+        lines = result.splitlines(keepends=False)
+        cleaned_lines = [re.sub(r'[ \t]+', ' ', line.strip()) for line in lines]
+        return '\n'.join(cleaned_lines)
