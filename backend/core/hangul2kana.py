@@ -71,6 +71,22 @@ def add_user_exception(hangul: str, kana: str) -> None:
     _MERGED_EXC_CACHE = None
 
 
+def _fallback_jamo(ch: str) -> str:
+    """辞書にないハングル音節を Jamo 分解→合成でカナに変換する"""
+    from .jamo_utils import decompose_syllable, jamo_to_kana
+    comp = decompose_syllable(ch)
+    if comp is None:
+        return ch
+    result = jamo_to_kana(*comp)
+    return result if result is not None else ch
+
+
 def hangul_to_kana(text: str) -> str:
-    # 通常のカナ変換のみ（例外は上位で処理済み）
-    return ''.join(HANGUL_KANA_DICT.get(ch, ch) for ch in text)
+    """
+    ハングル文字列をカナに変換。
+    辞書にある音節はそちらを優先し、ない音節は Jamo 合成ルールで変換する。
+    """
+    return ''.join(
+        HANGUL_KANA_DICT.get(ch) or _fallback_jamo(ch)
+        for ch in text
+    )
