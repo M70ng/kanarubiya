@@ -229,6 +229,7 @@ export default function ConvertPage() {
               <div>
                 <h3 className="font-bold text-[#34332f]">変換について</h3>
                 <p className="mt-1">ハングル以外の英語・日本語・記号などは、そのまま出力されます。</p>
+                <p>「ㇰ」「ㇺ」「ㇽ」「ㇷ゚」などの小文字は、短く添える音を表します。</p>
                 <p>読み方の精度には限界があります。目安としてお使いください。</p>
               </div>
               <div>

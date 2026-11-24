@@ -81,12 +81,30 @@ def _fallback_jamo(ch: str) -> str:
     return result if result is not None else ch
 
 
+# g2pK後の代表的な終声を、母音を付けず短く読むための表記。
+# ㇷ゚ は小書きの「ㇷ」に半濁点を組み合わせた文字。
+_FINAL_KANA = {
+    1: "ㇰ",   # ㄱ
+    4: "ン",   # ㄴ
+    7: "ッ",   # ㄷ
+    8: "ㇽ",   # ㄹ
+    16: "ㇺ",  # ㅁ
+    17: "ㇷ゚",  # ㅂ
+    21: "ン",  # ㅇ
+}
+
+
+def _syllable_to_kana(ch: str) -> str:
+    """発音変化後の終声を統一し、それ以外は既存の辞書を使う。"""
+    if len(ch) == 1 and "가" <= ch <= "힣":
+        jong = (ord(ch) - 0xAC00) % 28
+        if jong in _FINAL_KANA:
+            open_syllable = chr(ord(ch) - jong)
+            onset = HANGUL_KANA_DICT.get(open_syllable) or _fallback_jamo(open_syllable)
+            return onset + _FINAL_KANA[jong]
+    return HANGUL_KANA_DICT.get(ch) or _fallback_jamo(ch)
+
+
 def hangul_to_kana(text: str) -> str:
-    """
-    ハングル文字列をカナに変換。
-    辞書にある音節はそちらを優先し、ない音節は Jamo 合成ルールで変換する。
-    """
-    return ''.join(
-        HANGUL_KANA_DICT.get(ch) or _fallback_jamo(ch)
-        for ch in text
-    )
+    """発音変化後のハングルをカナへ変換し、その他の文字は保持する。"""
+    return ''.join(_syllable_to_kana(ch) for ch in text)
