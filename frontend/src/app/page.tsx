@@ -90,15 +90,23 @@ export default function ConvertPage() {
   const [convertNumbers, setConvertNumbers] = useState(false)
 
   const SAMPLE_TEXTS = [
-    { label: "歌詞っぽい", text: "그래요 난 널 사랑해 언제나 믿어" },
-    { label: "このアプリ", text: "이 앱 진짜 대박이당! 이렇게 좋은 앱을 만들어주셔서 감사하네여ㅠㅠ" },
-    { label: "日常会話", text: "뭐 해요? 저는 한국어 공부하고 있어요. 내일도 한국어 공부할거에요!" },
-    { label: "このアプリ", text: "여러분! 카나루비야라는 앱 알아요? 이 앱으로 한국어 노래 가사 읽기가 엄청 쉬워졌네요!" },
-    { label: "短い会話", text: "어제 소녀시대 콘서트를 갔는데 연출 짱이었어요. 가길 잘했어요ㅎㅎ" },
+    { label: "パッチム", text: "밥\n밤\n달\n꽃" },
+    { label: "音のつながり", text: "밥 먹어요.\n꽃이 피어요.\n같이 가요." },
+    { label: "数字と日付", text: "오늘은 3월 15일이에요.\n친구를 2번 만나요." },
+    { label: "英語・記号まじり", text: "K-POP 노래를 들어요!\nHello, 친구야 :)" },
+    { label: "歌詞のような文章", text: "오늘 밤 별을 보며\n너와 함께 노래해\n우리의 작은 이야기" },
+    { label: "日常会話", text: "안녕하세요!\n한국어를 공부하고 있어요.\n잘 부탁해요." },
   ] as const
   const [sampleIndex, setSampleIndex] = useState(0)
+  const [sampleLabel, setSampleLabel] = useState<string | null>(null)
   const handleInsertSample = () => {
-    setInput(SAMPLE_TEXTS[sampleIndex].text)
+    const sample = SAMPLE_TEXTS[sampleIndex]
+    stopReading()
+    setResult("")
+    setSource("")
+    setError(null)
+    setInput(sample.text)
+    setSampleLabel(sample.label)
     setSampleIndex((i) => (i + 1) % SAMPLE_TEXTS.length)
   }
 
@@ -148,6 +156,7 @@ export default function ConvertPage() {
     try {
       const text = await navigator.clipboard.readText()
       setInput((prev) => prev + (prev ? "\n" : "") + text)
+      setSampleLabel(null)
       setPasteSuccess(true)
       setTimeout(() => setPasteSuccess(false), 1500)
     } catch {
@@ -184,12 +193,12 @@ export default function ConvertPage() {
               <div className="flex min-h-[68px] flex-wrap items-center justify-between gap-2 border-b border-[#dedcd5] px-5 py-3 sm:px-7">
                 <div className="flex items-baseline gap-3"><h2 className="font-bold">韓国語</h2></div>
                 <div className="flex items-center gap-1">
-                  <Button type="button" variant="ghost" size="sm" onClick={handleInsertSample} disabled={isConverting} className="rounded-none px-2 text-sm text-[#67655f] hover:bg-[#efeee9]"><RotateCcw className="mr-1.5 h-4 w-4" />例文を入れる</Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={handleInsertSample} disabled={isConverting} className="rounded-none px-2 text-sm text-[#67655f] hover:bg-[#efeee9]"><RotateCcw className="mr-1.5 h-4 w-4" />{sampleLabel ? "別の例文" : "例文を入れる"}</Button>
                   <Button type="button" variant="ghost" size="sm" onClick={handlePaste} disabled={isConverting} className="rounded-none px-2 text-sm text-[#67655f] hover:bg-[#efeee9]"><ClipboardPaste className="mr-1.5 h-4 w-4" />{pasteSuccess ? "貼り付け済み" : "貼り付け"}</Button>
                 </div>
               </div>
-              <Textarea aria-label="韓国語を入力" maxLength={10000} placeholder={"韓国語を入力、または貼り付け"} value={input} onChange={(e) => setInput(e.target.value)} disabled={isConverting} className="input-result-text min-h-[240px] flex-1 resize-y rounded-none border-0 bg-transparent p-5 text-[#20201e] shadow-none placeholder:text-[#b0aea6] focus-visible:ring-0 focus-visible:ring-offset-0 sm:min-h-[300px] sm:p-7" />
-              <div className="flex flex-wrap items-center justify-between gap-3 px-5 pb-5 sm:px-7 sm:pb-7"><span className="text-sm text-[#8a887f]" aria-live="polite">{input.length} / 10,000 文字</span><Button onClick={handleConvert} disabled={isConverting || !input.trim()} className="h-12 min-w-[150px] rounded-none bg-[#20201e] px-7 text-sm font-bold text-white hover:bg-[#d74b29]">{isConverting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />変換中</> : "かな読みに変換"}</Button></div>
+              <Textarea aria-label="韓国語を入力" maxLength={10000} placeholder={"韓国語を入力、または貼り付け"} value={input} onChange={(e) => { setInput(e.target.value); setSampleLabel(null) }} disabled={isConverting} className="input-result-text min-h-[240px] flex-1 resize-y rounded-none border-0 bg-transparent p-5 text-[#20201e] shadow-none placeholder:text-[#b0aea6] focus-visible:ring-0 focus-visible:ring-offset-0 sm:min-h-[300px] sm:p-7" />
+              <div className="flex flex-wrap items-center justify-between gap-3 px-5 pb-5 sm:px-7 sm:pb-7"><span className="text-sm text-[#8a887f]" aria-live="polite">{sampleLabel && <span className="mr-3 text-[#625f58]">例文：{sampleLabel}</span>}{input.length} / 10,000 文字</span><Button onClick={handleConvert} disabled={isConverting || !input.trim()} className="h-12 min-w-[150px] rounded-none bg-[#20201e] px-7 text-sm font-bold text-white hover:bg-[#d74b29]">{isConverting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />変換中</> : "かな読みに変換"}</Button></div>
             </div>
             <div className="flex min-w-0 flex-col bg-[#edede8]">
               <div className="flex min-h-[68px] flex-wrap items-center justify-between gap-2 border-b border-[#d7d6cf] px-5 py-3 sm:px-7">
