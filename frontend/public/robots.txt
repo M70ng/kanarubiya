@@ -1,6 +1,0 @@
-# カナルビ屋 - 検索エンジンにインデックスを許可
-User-agent: *
-Allow: /
-
-Sitemap: https://kanarubiya.com/sitemap.xml
-

@@ -24,39 +24,9 @@ export async function convertText(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text, use_g2pk: useG2pk, convert_numbers: convertNumbers }),
   })
-  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-  return response.json()
-}
-
-/**
- * 変換漏れ報告: ハングルと読みをユーザー辞書に追加
- */
-export async function addDictionaryEntry(hangul: string, kana: string): Promise<{ success: boolean; hangul: string; kana: string }> {
-  const url = `${API_BASE_URL}/api/kanafy-ko/dictionary`
-  let response: Response
-  try {
-    response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ hangul: hangul.trim(), kana: kana.trim() }),
-    })
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : ''
-    if (msg.includes('fetch') || msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-      const apiHint = API_BASE_URL ? API_BASE_URL : 'http://localhost:8000（開発時は Next が /api をここに転送）'
-      throw new Error(`バックエンドに接続できません。${apiHint} で API が起動しているか確認してください。`)
-    }
-    throw e
-  }
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}))
-    const detail = typeof err?.detail === 'string' ? err.detail : ''
-    if (response.status === 404) {
-      const apiHint = API_BASE_URL ? API_BASE_URL : 'http://localhost:8000'
-      throw new Error(`辞書APIが見つかりません（404）。バックエンドを再起動するか、${apiHint} で起動しているか確認してください。`)
-    }
-    throw new Error(detail || `HTTP error! status: ${response.status}`)
-  }
+  if (response.status === 429) throw new Error('アクセスが集中しています。少し待ってからもう一度お試しください。')
+  if (response.status === 413 || response.status === 422) throw new Error('入力が長すぎます。10,000文字以内でお試しください。')
+  if (!response.ok) throw new Error('変換に失敗しました。時間をおいてもう一度お試しください。')
   return response.json()
 }
 
