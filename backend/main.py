@@ -18,6 +18,53 @@ RATE_LIMIT_WINDOW_SEC = 60
 _rate_limit_store: dict[str, list[float]] = {}
 _rate_limit_lock = asyncio.Lock()
 
+MAX_REQUEST_BYTES = 128 * 1024
+
+
+class RequestSizeLimitMiddleware:
+    """Content-Length の有無に関係なく、JSON解析前に本文を制限する。"""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+        headers = dict(scope.get("headers", []))
+        try:
+            length = int(headers.get(b"content-length", b"0"))
+        except ValueError:
+            return await Response("Invalid Content-Length", status_code=400)(scope, receive, send)
+        if length < 0 or length > MAX_REQUEST_BYTES:
+            return await Response("Request too large", status_code=413)(scope, receive, send)
+        chunks = []
+        size = 0
+        while True:
+            message = await receive()
+            if message["type"] == "http.disconnect":
+                return
+            if message["type"] != "http.request":
+                continue
+            chunk = message.get("body", b"")
+            size += len(chunk)
+            if size > MAX_REQUEST_BYTES:
+                return await Response("Request too large", status_code=413)(scope, receive, send)
+            chunks.append(chunk)
+            if not message.get("more_body", False):
+                break
+        body = b"".join(chunks)
+        delivered = False
+
+        async def replay():
+            nonlocal delivered
+            if not delivered:
+                delivered = True
+                return {"type": "http.request", "body": body, "more_body": False}
+            return await receive()
+
+        await self.app(scope, replay, send)
+
+
 # クローラー・スクレイパーとみなす User-Agent パターン（API を叩かせない）
 CRAWLER_UA_PATTERNS = [
     re.compile(r"googlebot", re.I),
@@ -110,6 +157,8 @@ app.add_middleware(SecurityHeadersMiddleware)
 
 # レート制限（IP あたり 1 分間のリクエスト数制限、RATE_LIMIT_PER_MINUTE=0 で無効）
 app.add_middleware(RateLimitMiddleware)
+
+app.add_middleware(RequestSizeLimitMiddleware)
 
 # クローラー対策（User-Agent でボットを 403、全レスポンスに X-Robots-Tag 付与）
 app.add_middleware(CrawlerBlockMiddleware)

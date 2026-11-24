@@ -1,6 +1,6 @@
 # backend/api/kanafy_ko.py
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Annotated, List, Optional
 import sys
 import os
@@ -13,9 +13,9 @@ from core.korean_to_kana import KoreanToKanaConverter
 router = APIRouter(prefix="/api", tags=["korean-conversion"])
 
 # リクエストサイズ制限（DoS・負荷対策）
-MAX_TEXT_LENGTH = 50_000
-MAX_BATCH_ITEMS = 100
-MAX_UPLOAD_BYTES = 5 * 1024 * 1024  # 5MB
+MAX_TEXT_LENGTH = 10_000
+MAX_BATCH_ITEMS = 10
+MAX_BATCH_TOTAL_LENGTH = 20_000
 
 # リクエストモデル
 class KoreanTextRequest(BaseModel):
@@ -27,6 +27,12 @@ class KoreanBatchRequest(BaseModel):
     texts: List[Annotated[str, Field(max_length=MAX_TEXT_LENGTH)]] = Field(..., max_length=MAX_BATCH_ITEMS)
     use_g2pk: bool = True
     convert_numbers: bool = False
+
+    @model_validator(mode="after")
+    def limit_total_length(self):
+        if sum(map(len, self.texts)) > MAX_BATCH_TOTAL_LENGTH:
+            raise ValueError("一括変換の合計は20,000文字以内にしてください")
+        return self
 
 # レスポンスモデル
 class KoreanTextResponse(BaseModel):
