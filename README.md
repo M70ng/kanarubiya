@@ -70,15 +70,15 @@ IP あたり「1 分間に N 回まで」の制限が入っています。超過
 
 | 環境変数 | 説明 | 例 |
 |----------|------|-----|
-| `RATE_LIMIT_PER_MINUTE` | クライアントごとの1分あたりの上限 | `20` |
+| `RATE_LIMIT_PER_MINUTE` | クライアントごとの1分あたりの上限（最大20） | `20` |
 | `GLOBAL_RATE_LIMIT_PER_MINUTE` | ワーカー全体の1分あたりの上限 | `600` |
 | `TRUSTED_PROXY_CIDRS` | 信頼できるプロキシのIP/CIDR（カンマ区切り） | 空 |
 
 **手順（本番で変更する場合）:**
 
 ```bash
-# 例: 1 分あたり 120 回までに緩和
-export RATE_LIMIT_PER_MINUTE=120
+# 例: 1 分あたり 10 回までに制限
+export RATE_LIMIT_PER_MINUTE=10
 python main.py
 ```
 

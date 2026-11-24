@@ -15,7 +15,7 @@ import ipaddress
 from collections import deque
 
 # 制限はワーカー単位。複数台構成では外部の共有レート制限も必要。
-RATE_LIMIT_PER_MINUTE = max(1, int(os.environ.get("RATE_LIMIT_PER_MINUTE", "20")))
+RATE_LIMIT_PER_MINUTE = min(20, max(1, int(os.environ.get("RATE_LIMIT_PER_MINUTE", "20"))))
 GLOBAL_RATE_LIMIT_PER_MINUTE = max(1, int(os.environ.get("GLOBAL_RATE_LIMIT_PER_MINUTE", "600")))
 RATE_LIMIT_WINDOW_SEC = 60
 MAX_RATE_LIMIT_CLIENTS = 10000
