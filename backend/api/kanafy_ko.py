@@ -9,7 +9,6 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.korean_to_kana import KoreanToKanaConverter
-from core.hangul2kana import add_user_exception
 
 router = APIRouter(prefix="/api", tags=["korean-conversion"])
 
@@ -28,10 +27,6 @@ class KoreanBatchRequest(BaseModel):
     texts: List[Annotated[str, Field(max_length=MAX_TEXT_LENGTH)]] = Field(..., max_length=MAX_BATCH_ITEMS)
     use_g2pk: bool = True
     convert_numbers: bool = False
-
-class DictionaryAddRequest(BaseModel):
-    hangul: str = Field(..., max_length=200)
-    kana: str = Field(..., max_length=500)
 
 # レスポンスモデル
 class KoreanTextResponse(BaseModel):
@@ -84,20 +79,6 @@ async def convert_korean_batch_to_kana(request: KoreanBatchRequest):
         return KoreanBatchResponse(results=results)
     except Exception:
         raise HTTPException(status_code=500, detail="一括変換に失敗しました。")
-
-@router.post("/kanafy-ko/dictionary")
-async def add_dictionary_entry(request: DictionaryAddRequest):
-    """
-    変換漏れ報告: ハングルと読みをユーザー辞書に追加する。
-    次回以降の変換でこのエントリが使われます。
-    """
-    try:
-        add_user_exception(request.hangul, request.kana)
-        return {"success": True, "hangul": request.hangul, "kana": request.kana}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))  # バリデーション理由はユーザーに返してよい
-    except Exception:
-        raise HTTPException(status_code=500, detail="辞書の追加に失敗しました。")
 
 @router.get("/kanafy-ko/health")
 async def health_check():

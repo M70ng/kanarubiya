@@ -53,7 +53,7 @@ def get_merged_exceptions() -> dict:
     """組み込み例外とユーザー追加例外をマージ（ユーザーを優先）"""
     global _MERGED_EXC_CACHE
     if _MERGED_EXC_CACHE is None:
-        _MERGED_EXC_CACHE = {**KANA_EXC_DICT, **_USER_KANA_EXC}
+        _MERGED_EXC_CACHE = dict(KANA_EXC_DICT)
     return _MERGED_EXC_CACHE
 
 

@@ -136,7 +136,6 @@ async def root():
             "description": "歌詞・韓国語→かな読み変換（メイン）",
             "convert": "POST /api/kanafy-ko",
             "batch_convert": "POST /api/kanafy-ko/batch",
-            "dictionary_add": "POST /api/kanafy-ko/dictionary",
             "health": "GET /api/kanafy-ko/health",
             "test": "GET /api/kanafy-ko/test",
         },
