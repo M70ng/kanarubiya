@@ -19,4 +19,4 @@ EXPOSE 8000
 
 # Render は PORT 環境変数でポートを指定する
 # Render は実行時に PORT を渡すためシェルで展開
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["sh", "-c", "uvicorn main:app --no-proxy-headers --host 0.0.0.0 --port ${PORT:-8000}"]

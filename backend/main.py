@@ -11,14 +11,24 @@ import re
 import time
 import asyncio
 import argparse
+import ipaddress
+from collections import deque
 
-# レート制限: 1分あたりのリクエスト数（環境変数 RATE_LIMIT_PER_MINUTE で上書き可、0 で無効）
-RATE_LIMIT_PER_MINUTE = int(os.environ.get("RATE_LIMIT_PER_MINUTE", "60"))
+# 制限はワーカー単位。複数台構成では外部の共有レート制限も必要。
+RATE_LIMIT_PER_MINUTE = max(1, int(os.environ.get("RATE_LIMIT_PER_MINUTE", "20")))
+GLOBAL_RATE_LIMIT_PER_MINUTE = max(1, int(os.environ.get("GLOBAL_RATE_LIMIT_PER_MINUTE", "600")))
 RATE_LIMIT_WINDOW_SEC = 60
-_rate_limit_store: dict[str, list[float]] = {}
-_rate_limit_lock = asyncio.Lock()
-
+MAX_RATE_LIMIT_CLIENTS = 10000
 MAX_REQUEST_BYTES = 128 * 1024
+_rate_limit_store: dict[str, deque[float]] = {}
+_global_requests: deque[float] = deque()
+_rate_limit_lock = asyncio.Lock()
+# 接続元プロキシのCIDRだけを明示する。未設定時は転送ヘッダーを信用しない。
+TRUSTED_PROXY_NETWORKS = tuple(
+    ipaddress.ip_network(value.strip(), strict=False)
+    for value in os.environ.get("TRUSTED_PROXY_CIDRS", "").split(",")
+    if value.strip()
+)
 
 
 class RequestSizeLimitMiddleware:
@@ -102,40 +112,60 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 def _client_ip(request: Request) -> str:
-    """プロキシ経由の場合は X-Forwarded-For の先頭、それ以外は client.host"""
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    if request.client:
-        return request.client.host
-    return "unknown"
+    """信頼済みプロキシからの場合だけ、右から順に転送元を確認する。"""
+    peer = request.client.host if request.client else "unknown"
+    # Render public web-service ingress provides CF-Connecting-IP. Private-network
+    # callers must be trusted; they do not pass through this ingress.
+    if os.environ.get("RENDER") == "true":
+        connecting_ip = request.headers.get("cf-connecting-ip", "")
+        try:
+            return str(ipaddress.ip_address(connecting_ip))
+        except ValueError:
+            pass
+    try:
+        current = ipaddress.ip_address(peer)
+        if not any(current in network for network in TRUSTED_PROXY_NETWORKS):
+            return str(current)
+        forwarded = request.headers.get("x-forwarded-for", "")
+        hops = forwarded.split(",") if forwarded else []
+        if len(hops) > 20:
+            return str(current)
+        for hop in reversed(hops):
+            if not any(current in network for network in TRUSTED_PROXY_NETWORKS):
+                break
+            current = ipaddress.ip_address(hop.strip())
+        return str(current)
+    except ValueError:
+        return peer
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """IP ごとに 1 分あたり N リクエストを制限（超過時 429）"""
+    """クライアント別と全体の両方に1分間の上限を設ける。"""
 
     async def dispatch(self, request: Request, call_next) -> Response:
-        if RATE_LIMIT_PER_MINUTE <= 0:
-            return await call_next(request)
-        # ヘルスチェックは制限対象外（LB が 429 を受けないように）
         if request.url.path.rstrip("/") in ("/health", "/api/kanafy-ko/health"):
             return await call_next(request)
         ip = _client_ip(request)
         now = time.monotonic()
+        cutoff = now - RATE_LIMIT_WINDOW_SEC
         async with _rate_limit_lock:
-            if ip not in _rate_limit_store:
-                _rate_limit_store[ip] = []
-            times = _rate_limit_store[ip]
-            # 窓より古いものを削除
-            cutoff = now - RATE_LIMIT_WINDOW_SEC
-            while times and times[0] < cutoff:
-                times.pop(0)
+            while _global_requests and _global_requests[0] <= cutoff:
+                _global_requests.popleft()
+            if len(_global_requests) >= GLOBAL_RATE_LIMIT_PER_MINUTE:
+                return Response("Too Many Requests", status_code=429, headers={"Retry-After": "60"})
+            _global_requests.append(now)
+            # 古いクライアントを削除し、偽装IP等で無制限に増えないようにする。
+            for key in list(_rate_limit_store):
+                times = _rate_limit_store[key]
+                while times and times[0] <= cutoff:
+                    times.popleft()
+                if not times:
+                    del _rate_limit_store[key]
+            if ip not in _rate_limit_store and len(_rate_limit_store) >= MAX_RATE_LIMIT_CLIENTS:
+                return Response("Too Many Requests", status_code=429, headers={"Retry-After": "60"})
+            times = _rate_limit_store.setdefault(ip, deque())
             if len(times) >= RATE_LIMIT_PER_MINUTE:
-                return Response(
-                    content="Too Many Requests",
-                    status_code=429,
-                    headers={"Retry-After": str(RATE_LIMIT_WINDOW_SEC)},
-                )
+                return Response("Too Many Requests", status_code=429, headers={"Retry-After": "60"})
             times.append(now)
         return await call_next(request)
 
@@ -155,7 +185,7 @@ app = FastAPI(
 # セキュリティヘッダー（X-Content-Type-Options, X-Frame-Options 等）
 app.add_middleware(SecurityHeadersMiddleware)
 
-# レート制限（IP あたり 1 分間のリクエスト数制限、RATE_LIMIT_PER_MINUTE=0 で無効）
+# レート制限（IP あたり 1 分間のリクエスト数制限）
 app.add_middleware(RateLimitMiddleware)
 
 app.add_middleware(RequestSizeLimitMiddleware)
@@ -214,4 +244,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     print(f"Starting server on {args.host}:{args.port}")
-    uvicorn.run(app, host=args.host, port=args.port, reload=args.reload)
+    uvicorn.run(app, host=args.host, port=args.port, reload=args.reload, proxy_headers=False)

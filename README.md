@@ -62,7 +62,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 - **CORS**: バックエンドの本番ドメインを許可するため、環境変数 `CORS_ORIGINS` にフロントのオリジン（例: `https://your-app.vercel.app`）をカンマ区切りで設定してください。
 - **API の URL**: フロントから別ホストの API を叩く場合は `NEXT_PUBLIC_API_BASE_URL` にバックエンドの URL を設定してください。
-- クローラー対策（robots.txt / メタ / User-Agent ブロック）、リクエストサイズ制限、セキュリティヘッダー（X-Content-Type-Options 等）、エラー内容の非開示は実装済みです。本番では HTTPS 化を推奨します。
+- APIのUser-Agent制限、リクエストサイズ制限、セキュリティヘッダー（X-Content-Type-Options 等）、エラー内容の非開示は実装済みです。本番では HTTPS 化を推奨します。
 
 ### レート制限（バックエンド）
 
@@ -70,7 +70,9 @@ IP あたり「1 分間に N 回まで」の制限が入っています。超過
 
 | 環境変数 | 説明 | 例 |
 |----------|------|-----|
-| `RATE_LIMIT_PER_MINUTE` | 1 分あたりの最大リクエスト数。`0` で無効 | `60`（デフォルト） |
+| `RATE_LIMIT_PER_MINUTE` | クライアントごとの1分あたりの上限 | `20` |
+| `GLOBAL_RATE_LIMIT_PER_MINUTE` | ワーカー全体の1分あたりの上限 | `600` |
+| `TRUSTED_PROXY_CIDRS` | 信頼できるプロキシのIP/CIDR（カンマ区切り） | 空 |
 
 **手順（本番で変更する場合）:**
 
@@ -78,9 +80,6 @@ IP あたり「1 分間に N 回まで」の制限が入っています。超過
 # 例: 1 分あたり 120 回までに緩和
 export RATE_LIMIT_PER_MINUTE=120
 python main.py
-
-# レート制限を無効にする（非推奨）
-export RATE_LIMIT_PER_MINUTE=0
 ```
 
 - `/health` と `/api/kanafy-ko/health` は制限対象外です（ロードバランサのヘルスチェックが 429 にならないように）。
@@ -110,3 +109,9 @@ python main.py
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+### API の保護
+
+辞書追加APIは無効です。既存のユーザー追加辞書ファイルは削除せず、変換には適用しません。単一変換は10,000文字、一括変換は10件・合計20,000文字、HTTP本文は128 KiBまでです。レート制限は各ワーカーのメモリ内で動作します。複数ワーカー・複数インスタンス間の共有防御には、ホスティング側のレート制限や共有ストアが別途必要です。
+
+Render の公開Webサービスでは、Cloudflareを経由した `CF-Connecting-IP` を利用します。Renderのプライベートネットワークから直接接続できるサービスは信頼できるものに限定してください。その他のプロキシ経由で個別IPを使用する場合、ホスティング事業者が保証する直前のプロキシのIP/CIDRのみを `TRUSTED_PROXY_CIDRS` に設定してください。未設定時はプロキシ全体が同一クライアントとして制限される場合があります。`X-Forwarded-For` を安全に評価するため、Uvicornは `--no-proxy-headers` で起動します。
