@@ -167,7 +167,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             if len(times) >= RATE_LIMIT_PER_MINUTE:
                 return Response("Too Many Requests", status_code=429, headers={"Retry-After": "60"})
             times.append(now)
-        return await call_next(request)
+            remaining = RATE_LIMIT_PER_MINUTE - len(times)
+        response = await call_next(request)
+        response.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_PER_MINUTE)
+        response.headers["X-RateLimit-Remaining"] = str(remaining)
+        return response
 
 # 本番で Swagger/ReDoc を無効化（DISABLE_DOCS=1 で /docs, /redoc, /openapi.json を無効）
 DISABLE_DOCS = os.environ.get("DISABLE_DOCS", "").lower() in ("1", "true", "yes")
